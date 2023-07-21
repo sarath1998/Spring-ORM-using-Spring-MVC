@@ -6,7 +6,7 @@ A LMS(Learning Management System project) built using the Spring MVC + ORM frame
 2. The flow sequence starting from the JSP to DB. In breief way..
       **JSP -> Controller -> Service(Contains the actual business Logic) --> DAO(Methods that interact with the DB)**
 3. Usage of DTO(Note: These DTO are created using new keyword in Java files..)
-  # Spring MVC application
+  # Spring MVC Things
    1. Creating the Dispatcher servlet(i.e Front controller) and the configuration file(Dispatcher servelet expects the configuration file while its creation)
    2. Setting up the View Resolver in the configuration file
   Note: In this pkg the config file -- SelExpLmsConfig.java
