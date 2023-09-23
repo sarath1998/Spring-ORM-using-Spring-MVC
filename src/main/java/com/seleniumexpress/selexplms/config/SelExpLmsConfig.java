@@ -57,7 +57,7 @@ public class SelExpLmsConfig implements WebMvcConfigurer{
 		
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
 		dataSource.setUsername("root");
-		dataSource.setPassword("root@1600248");
+		dataSource.setPassword("root123");
 		dataSource.setUrl("jdbc:mysql://127.0.0.1:3306/selenium-express");
 		dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
 		return dataSource;
