@@ -27,7 +27,7 @@
           <a class="nav-link" href="/selexp-lms/add-instructor">Add Instructors</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link disabled">Coming soon</a>
+          <a class="nav-link" href="/selexp-lms/add-course">Add Course</a>
         </li>
       </ul>
     </div>
