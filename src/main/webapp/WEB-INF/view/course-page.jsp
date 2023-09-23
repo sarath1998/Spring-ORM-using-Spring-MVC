@@ -12,20 +12,68 @@
 <body>
 	<%@include file="menu.jsp"%>
 	<div class="container">
-		<h2>${course.courseName} - lessons page</h2>
+		<h2>${courseDTO.courseName} - lessons page</h2>
 		<hr />
-		<h3>The lessons under this course are:</h3>
-		<c:forEach var="lesson" items="${course.lessons}" varStatus="itr">
+		<h4>The lessons under this course are:</h4>
+		<c:forEach var="lesson" items="${pagedListHolder.pageList}" varStatus="itr">
 			<!-- each instructor have courses -->
 			<!-- each course have many lessons -->
 			<table>
 				<tr>
-					<td>${itr.index + 1}</td> <!--  Display the Dummy serial Number instead of actual Lesson number -->
+					<td>${lesson.id}</td>
+					<!--  Display the serial Number(using the index) instead of actual Lesson number -->
 					<td>.</td>
 					<td><a href="open-lesson?lessonId=${lesson.id}">${lesson.lessonName}</a></td>
 				</tr>
 			</table>
 		</c:forEach>
+
+		<div align="center">
+			<table>
+				<tr>
+				    <!--  Prev Button -->
+					<td> 
+						<c:choose>
+							<c:when test="${pagedListHolder.firstPage}"> <!--  Do not display Prev for 1st page -->
+							   
+		    				</c:when>
+							<c:otherwise>
+								<a href="view-Course?courseId=${courseDTO.id}&pageNum=prev">Prev</a>
+								&nbsp;
+							</c:otherwise>
+						</c:choose>
+					</td>
+					
+					<!--  Actual Page Nos -->
+					<c:forEach begin="0" end="${pagedListHolder.pageCount - 1}" varStatus="itr">
+						<td>
+						   <c:choose>
+								<c:when test="${pagedListHolder.page == itr.index}">  <!-- Do not display hyperlink for the current page -->
+		           	 				${itr.index + 1} 
+		        				</c:when>
+						    	<c:otherwise>
+									<a href="view-Course?courseId=${courseDTO.id}&pageNum=${itr.index}">${itr.index+1}</a> <!-- Only show hyperlink to other page nos --> 
+								</c:otherwise> <!-- Showing the dummy page Nos, instead of showing the original Nos -->
+							</c:choose>
+							&nbsp;
+						</td>
+					</c:forEach>
+					
+					<!--  Next Button -->
+					<td>
+						<c:choose>
+							<c:when test="${pagedListHolder.lastPage}">  <!--  Do not display next for last page -->
+		       				
+		    			</c:when>
+							<c:otherwise>
+								<a href="view-Course?courseId=${courseDTO.id}&pageNum=next">Next</a>
+								&nbsp;
+							</c:otherwise>
+						</c:choose>
+					</td>
+				</tr>
+			</table>
+		</div>
 	</div>
 </body>
 </html>

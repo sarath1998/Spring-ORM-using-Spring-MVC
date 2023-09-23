@@ -3,6 +3,7 @@ package com.seleniumexpress.selexplms.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.support.PagedListHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import com.seleniumexpress.selexplms.dto.CourseDTO;
 import com.seleniumexpress.selexplms.dto.LessonCountDTO;
 import com.seleniumexpress.selexplms.entity.Course;
 import com.seleniumexpress.selexplms.entity.Instructor;
@@ -18,7 +20,10 @@ import com.seleniumexpress.selexplms.entity.Lesson;
 import com.seleniumexpress.selexplms.service.CourseService;
 import com.seleniumexpress.selexplms.service.InstructorService;
 
-@SessionAttributes("lessonCountDTO") // Loading this object to session scope.
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+
+@SessionAttributes(names = {"lessonCountDTO", "courseDTO"}) // Loading this object to session scope.
 @Controller
 public class CourseController 
 {
@@ -35,14 +40,55 @@ public class CourseController
 	 */
 	@GetMapping("/view-Course")
 	public String showCoursePage(@RequestParam("courseId") int courseId,
-								 Model model)
+								 @RequestParam(name = "pageNum", required = false) String pageNo,
+								 Model model,
+								 HttpServletRequest request)
 	{
-		System.out.println("courseId: "+courseId);
-		Course course = courseService.findCourseById(courseId);
-		model.addAttribute("course", course);
-
+		
+		// PagedListHolder..used for Pagination.
+		PagedListHolder<Lesson> pagedListHolder = new PagedListHolder<>();
+		
+		if (pageNo == null)
+		{
+			System.out.println("courseId: "+courseId);
+			
+			// Retreive the Lessons available for the course
+			Course course = courseService.findCourseById(courseId);
+			List<Lesson> lessons = course.getLessons();
+			
+			// Intializing the courseDTO object
+			CourseDTO courseDTO = new CourseDTO();
+			courseDTO.setCourseName(course.getCourseName());
+			courseDTO.setId(course.getId());
+			
+			model.addAttribute("courseDTO", courseDTO);
+			
+			System.out.println("############courseDTO: "+courseDTO);
+			
+			// Setting the PagedListHander values
+			pagedListHolder.setSource(lessons); // Setting source data to PagedListHolder to perform the Pagination
+			pagedListHolder.setPage(0); // Default Page number is 0. So, setting it to 0 to on the first time visit.
+			pagedListHolder.setPageSize(4); // Limit the record count to 4
+			
+			model.addAttribute("course", course);
+			request.getSession().setAttribute("pagedListHolder", pagedListHolder);
+		}
+		else
+		{
+			pagedListHolder = (PagedListHolder<Lesson>)request.getSession().getAttribute("pagedListHolder");
+			
+			if ("prev".equals(pageNo))
+				pagedListHolder.previousPage(); // previousPage() will set the data of the previous page.. No need to make an explicit call to setPage()
+			else if ("next".equals(pageNo))     // Similarly the nextPage()
+				pagedListHolder.nextPage();
+			else 
+			{
+			    pagedListHolder.setPage(Integer.parseInt(pageNo));
+			}
+		}
+		
 		LessonCountDTO lessonCountDTO = new LessonCountDTO(); 
-		List<Lesson> lessons_of_a_course = course.getLessons();
+		List<Lesson> lessons_of_a_course = pagedListHolder.getSource();
 		
 		// Ideally, COURSE will have LESSONS.
 		// Update the model with the first, last and total lessons count only
@@ -52,7 +98,8 @@ public class CourseController
 		{
 			int firstLessonNumber = lessons_of_a_course.get(0).getId();
 			System.out.println("################first Lesson Number: "+firstLessonNumber);
-			int totalCountOfLessons = course.getLessons().size();
+			int totalCountOfLessons = pagedListHolder.getNrOfElements();
+			System.out.println("################Total No of Lessons: "+totalCountOfLessons);
 			int lastLessonNumber = (firstLessonNumber + totalCountOfLessons) - 1;
 			System.out.println("################Last Lesson Number: "+lastLessonNumber);
 
@@ -85,7 +132,7 @@ public class CourseController
 	 */
 	@RequestMapping("/open-lesson")
 	public String openLesson(@RequestParam("lessonId") int lessonId,
-			Model model)
+							 Model model)
 	{
 		System.out.println("lessonId: "+lessonId);
 		Lesson lesson = courseService.findLessonById(lessonId);
@@ -114,7 +161,7 @@ public class CourseController
 	/**
 	 * Inserts the new course into the Courses table and attaches it to the instructor.
 	 * @param model the Model for transferring the data from Java to Jsp
-	 */
+	 */   
 	@PostMapping("/submit-course")
 	public String submitCourse(Course course)
 	{
@@ -124,4 +171,6 @@ public class CourseController
 
 		return "redirect:/show-Instructors";
 	}
+	
+	
 }
